@@ -29,6 +29,14 @@
   .msg-success { background:#f0fdf4; border:1px solid #22c55e; color:#16a34a; }
   .msg-error { background:#fef2f2; border:1px solid #ef4444; color:#dc2626; }
   .hidden { display:none !important; }
+  .ultimos-table { width:100%; border-collapse:collapse; font-size:0.9rem; }
+  .ultimos-table th { background:var(--brand-teal); color:#fff; padding:10px 12px; text-align:left; font-weight:600; }
+  .ultimos-table td { padding:10px 12px; border-bottom:1px solid var(--border-color); }
+  .ultimos-table tr:hover td { background:var(--container-bg); }
+  .ultimos-table .badge-sm { display:inline-block; padding:2px 8px; border-radius:4px; font-size:0.75rem; font-weight:600; background:var(--container-bg); color:var(--brand-teal); border:1px solid var(--border-color); }
+  .ultimos-table a { color:var(--brand-teal); text-decoration:none; }
+  .ultimos-table a:hover { text-decoration:underline; }
+  @media(max-width:600px){ .ultimos-table{font-size:0.8rem;} .ultimos-table th,.ultimos-table td{padding:6px 8px;} }
   </style>
 </head>
 <body>
@@ -55,6 +63,11 @@
     </div>
 
     <div class="dashboard-grid" id="categorias-grid"></div>
+
+    <div style="margin-top:30px;">
+      <h2><i class="bi bi-clock-history"></i> Últimos Documentos Publicados</h2>
+      <div id="ultimos-docs-container" style="margin-top:12px;"></div>
+    </div>
 
     <div style="margin-top:30px;">
       <a href="../index.html" class="btn-voltar"><i class="bi bi-arrow-left"></i> Voltar para Home</a>
@@ -170,7 +183,44 @@ var icons = {
   if (localStorage.getItem('amoranimal_token')) {
     document.getElementById('admin-toggle-link').style.display = '';
   }
+
+  carregarUltimosDocs();
 })();
+
+function carregarUltimosDocs() {
+  var container = document.getElementById('ultimos-docs-container');
+  container.innerHTML = '<p style="color:var(--muted-color);text-align:center;padding:1rem;">Carregando...</p>';
+
+  apiFetch('/transparencia')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (!Array.isArray(data) || data.length === 0) {
+        container.innerHTML = '<p style="color:var(--muted-color);text-align:center;">Nenhum documento publicado.</p>';
+        return;
+      }
+      var docs = data.slice(0, 10);
+      var html = '<table class="ultimos-table"><thead><tr>';
+      html += '<th>Documento</th><th>Categoria</th><th>Ano</th><th>Ações</th>';
+      html += '</tr></thead><tbody>';
+      docs.forEach(function(doc) {
+        var ext = doc.arquivo ? doc.arquivo.split('.').pop().toUpperCase() : '';
+        var catLabel = types[doc.tipo] || doc.tipo || '';
+        var arquivoUrl = API_BASE + '/uploads/transparencia/' + (doc.arquivo || '');
+        html += '<tr>';
+        html += '<td>' + (doc.titulo || 'Sem título') + (ext ? ' <span class="badge-sm">' + ext + '</span>' : '') + '</td>';
+        html += '<td>' + catLabel + '</td>';
+        html += '<td>' + (doc.ano || '—') + '</td>';
+        html += '<td><a href="' + arquivoUrl + '" target="_blank"><i class="bi bi-eye-fill"></i> Ver</a>';
+        if (doc.arquivo) html += ' &nbsp; <a href="' + arquivoUrl + '" download><i class="bi bi-download"></i> Baixar</a>';
+        html += '</td></tr>';
+      });
+      html += '</tbody></table>';
+      container.innerHTML = html;
+    })
+    .catch(function() {
+      container.innerHTML = '<p style="color:var(--muted-color);text-align:center;">Erro ao carregar documentos.</p>';
+    });
+}
 
 function toggleAdmin() {
   var section = document.getElementById('admin-section');
