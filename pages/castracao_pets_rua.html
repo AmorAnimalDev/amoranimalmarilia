@@ -64,6 +64,10 @@
             <input type="text" id="r_tutor_nome" style="width:100%;padding:8px;border:1px solid var(--input-border);border-radius:6px;" required>
           </div>
           <div>
+            <label style="display:block;margin-bottom:4px;font-size:0.85rem;">CPF *</label>
+            <input type="text" id="r_cpf" style="width:100%;padding:8px;border:1px solid var(--input-border);border-radius:6px;" placeholder="000.000.000-00" required>
+          </div>
+          <div>
             <label style="display:block;margin-bottom:4px;font-size:0.85rem;">Telefone *</label>
             <input type="tel" id="r_tutor_telefone" class="phone-input" style="width:100%;padding:8px;border:1px solid var(--input-border);border-radius:6px;" placeholder="(00) 00000-0000" required>
           </div>
@@ -76,14 +80,42 @@
             </select>
           </div>
         </div>
+        <h4>Endereço</h4>
         <div style="margin-bottom:1.5rem;">
           <div>
-            <label style="display:block;margin-bottom:4px;font-size:0.85rem;">E-mail</label>
-            <input type="email" id="r_tutor_email" style="width:100%;padding:8px;border:1px solid var(--input-border);border-radius:6px;" placeholder="email@exemplo.com">
+            <label style="display:block;margin-bottom:4px;font-size:0.85rem;">CEP *</label>
+            <div style="display:flex;gap:0.5rem;">
+              <input type="text" id="r_cep" style="flex:1;padding:8px;border:1px solid var(--input-border);border-radius:6px;" placeholder="00000-000" required>
+              <button type="button" onclick="buscarCepRua()" class="btn btn-primary btn-sm" style="white-space:nowrap;padding:8px 12px;border:none;border-radius:6px;background:var(--brand-teal);color:#fff;cursor:pointer;"><i class="bi bi-search"></i></button>
+            </div>
           </div>
           <div>
-            <label style="display:block;margin-bottom:4px;font-size:0.85rem;">Localidade (Bairro)</label>
-            <input type="text" id="r_localidade" style="width:100%;padding:8px;border:1px solid var(--input-border);border-radius:6px;" placeholder="Bairro">
+            <label style="display:block;margin-bottom:4px;font-size:0.85rem;">Endereço</label>
+            <input type="text" id="r_endereco" style="width:100%;padding:8px;border:1px solid var(--input-border);border-radius:6px;" placeholder="Rua/Logradouro">
+          </div>
+          <div style="display:flex;gap:0.5rem;">
+            <div style="flex:1;">
+              <label style="display:block;margin-bottom:4px;font-size:0.85rem;">Número</label>
+              <input type="text" id="r_numero" style="width:100%;padding:8px;border:1px solid var(--input-border);border-radius:6px;" placeholder="Nº">
+            </div>
+            <div style="flex:1;">
+              <label style="display:block;margin-bottom:4px;font-size:0.85rem;">Complemento</label>
+              <input type="text" id="r_complemento" style="width:100%;padding:8px;border:1px solid var(--input-border);border-radius:6px;" placeholder="Apto/Bloco">
+            </div>
+          </div>
+          <div>
+            <label style="display:block;margin-bottom:4px;font-size:0.85rem;">Bairro</label>
+            <input type="text" id="r_bairro" style="width:100%;padding:8px;border:1px solid var(--input-border);border-radius:6px;" placeholder="Bairro">
+          </div>
+          <div style="display:flex;gap:0.5rem;">
+            <div style="flex:2;">
+              <label style="display:block;margin-bottom:4px;font-size:0.85rem;">Cidade</label>
+              <input type="text" id="r_cidade" style="width:100%;padding:8px;border:1px solid var(--input-border);border-radius:6px;" placeholder="Cidade">
+            </div>
+            <div style="flex:1;">
+              <label style="display:block;margin-bottom:4px;font-size:0.85rem;">Estado</label>
+              <input type="text" id="r_estado" style="width:100%;padding:8px;border:1px solid var(--input-border);border-radius:6px;" placeholder="UF" maxlength="2">
+            </div>
           </div>
         </div>
 
@@ -185,6 +217,55 @@ apiFetch('/settings')
     if (data['clinica_pets']) document.getElementById('r_clinica').value = data['clinica_pets'];
   })
   .catch(function() {});
+
+function buscarCepRua() {
+  var cep = document.getElementById('r_cep').value.replace(/\D/g, '');
+  if (cep.length !== 8) { alert('CEP inválido. Digite 8 dígitos.'); return; }
+  fetch('https://viacep.com.br/ws/' + cep + '/json/')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.erro) { alert('CEP não encontrado.'); return; }
+      document.getElementById('r_endereco').value = data.logradouro || '';
+      document.getElementById('r_bairro').value = data.bairro || '';
+      document.getElementById('r_cidade').value = data.localidade || '';
+      document.getElementById('r_estado').value = data.uf || '';
+    })
+    .catch(function() { alert('Erro ao buscar CEP.'); });
+}
+
+document.getElementById('r_cep').addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') { e.preventDefault(); buscarCepRua(); }
+});
+
+document.getElementById('r_cep').addEventListener('input', function(e) {
+  var v = e.target.value.replace(/\D/g, '');
+  if (v.length > 8) v = v.slice(0, 8);
+  var f = '';
+  if (v.length > 0) f = v.slice(0, 5);
+  if (v.length > 5) f += '-' + v.slice(5, 8);
+  e.target.value = f;
+});
+
+document.getElementById('r_cpf').addEventListener('input', function(e) {
+  var v = e.target.value.replace(/\D/g, '');
+  if (v.length > 11) v = v.slice(0, 11);
+  var f = '';
+  if (v.length > 0) f = v.slice(0, 3);
+  if (v.length > 3) f += '.' + v.slice(3, 6);
+  if (v.length > 6) f += '.' + v.slice(6, 9);
+  if (v.length > 9) f += '-' + v.slice(9, 11);
+  e.target.value = f;
+});
+
+document.getElementById('r_tutor_telefone').addEventListener('input', function(e) {
+  var v = e.target.value.replace(/\D/g, '').slice(0, 11);
+  var f = '';
+  if (v.length > 0) f = '(' + v.slice(0, 2);
+  if (v.length > 2) f += ') ' + v.slice(2, 7);
+  if (v.length > 7) f += '-' + v.slice(7, 11);
+  e.target.value = f;
+});
+
 const petsPR = [];
 
 document.getElementById('r_btn_add_pet').addEventListener('click', function() {
@@ -283,8 +364,15 @@ function cadastrarPetsRua(e) {
       body: JSON.stringify({
         tipo: 'pets_rua',
         tutor_nome: nome,
+        cpf: document.getElementById('r_cpf').value.trim() || null,
         tutor_telefone: tel,
-        tutor_email: document.getElementById('r_tutor_email').value.trim() || null,
+        cep: document.getElementById('r_cep').value.trim() || null,
+        endereco: document.getElementById('r_endereco').value.trim() || null,
+        numero: document.getElementById('r_numero').value.trim() || null,
+        complemento: document.getElementById('r_complemento').value.trim() || null,
+        bairro: document.getElementById('r_bairro').value.trim() || null,
+        cidade: document.getElementById('r_cidade').value.trim() || null,
+        estado: document.getElementById('r_estado').value.trim() || null,
         pet_nome: pet.nome,
         pet_especie: pet.especie,
         pet_sexo: pet.sexo,
@@ -326,9 +414,15 @@ function cadastrarPetsRua(e) {
       atualizarTabelaPR();
       document.getElementById('r_btn_clear_pet').style.display = 'none';
       document.getElementById('r_tutor_nome').value = '';
+      document.getElementById('r_cpf').value = '';
       document.getElementById('r_tutor_telefone').value = '';
-      document.getElementById('r_tutor_email').value = '';
-      document.getElementById('r_localidade').value = '';
+      document.getElementById('r_cep').value = '';
+      document.getElementById('r_endereco').value = '';
+      document.getElementById('r_numero').value = '';
+      document.getElementById('r_complemento').value = '';
+      document.getElementById('r_bairro').value = '';
+      document.getElementById('r_cidade').value = '';
+      document.getElementById('r_estado').value = '';
       document.getElementById('r_whatsapp').value = '';
       document.getElementById('r_agenda').value = '';
     })

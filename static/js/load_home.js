@@ -67,9 +67,9 @@ function mergeCastracoes(castracoes, inscricoes, pets, calendarios) {
       especie: c.especie || c.pet_especie, sexo: c.sexo || c.pet_sexo, porte: c.porte || c.pet_porte,
       idade: c.idade || c.pet_idade, clinica: c.clinica, data: c.origem || c.created_at,
       status: c.status, contato: c.contato || c.tutor_telefone, tipo: c.tipo || '',
-      cpf: c.tutor_cpf || '', endereco: c.tutor_endereco || '', numero: c.tutor_numero || '',
-      bairro: c.tutor_bairro || '', cidade: c.tutor_cidade || '', estado: c.tutor_estado || '',
-      cep: c.tutor_cep || '', agenda: c.dia_semana || c.agenda || '' });
+      cpf: c.tutor_cpf || c.cpf || '', endereco: c.tutor_endereco || c.endereco || '', numero: c.tutor_numero || c.numero || '',
+      bairro: c.tutor_bairro || c.bairro || '', cidade: c.tutor_cidade || c.cidade || '', estado: c.tutor_estado || c.estado || '',
+      cep: c.tutor_cep || c.cep || '', agenda: c.dia_semana || c.agenda || '' });
   });
   if (Array.isArray(inscricoes)) inscricoes.forEach(function (ins) {
     var cal = calMap[ins.calendario_mutirao_id] || {};
